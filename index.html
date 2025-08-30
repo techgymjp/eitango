@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英単語クイズ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .file-input-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            background: #f8f9ff;
+        }
+
+        .file-input {
+            margin: 10px;
+            padding: 10px;
+            border: none;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            font-size: 1.2em;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .question-section {
+            display: none;
+        }
+
+        .question {
+            font-size: 1.8em;
+            margin: 30px 0;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .japanese-word {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 2em;
+            margin: 20px 0;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .option-btn {
+            padding: 15px 20px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f0f2f5;
+            color: #333;
+            border: 2px solid transparent;
+        }
+
+        .option-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .option-btn.correct {
+            background: #4CAF50;
+            color: white;
+            border-color: #45a049;
+        }
+
+        .option-btn.incorrect {
+            background: #f44336;
+            color: white;
+            border-color: #da190b;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .next-btn {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .next-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .result-section {
+            display: none;
+            text-align: center;
+        }
+
+        .final-score {
+            font-size: 3em;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .restart-btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #f44336;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎯 英単語クイズ</h1>
+        
+        <!-- ファイル読み込みセクション -->
+        <div id="fileSection" class="file-input-section">
+            <h3>スプレッドシートファイルを選択してください</h3>
+            <p>A列：英単語、B列：和訳語</p>
+            <input type="file" id="fileInput" class="file-input" accept=".csv,.xlsx,.xls">
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>ファイルを読み込み中...</p>
+            </div>
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+
+        <!-- 進捗表示 -->
+        <div class="progress-bar">
+            <div id="progressFill" class="progress-fill"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="currentQuestion">0</div>
+                <div>問題目</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="correctCount">0</div>
+                <div>正解数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="accuracy">0%</div>
+                <div>正答率</div>
+            </div>
+        </div>
+
+        <!-- クイズセクション -->
+        <div id="quizSection" class="question-section">
+            <div class="question">次の和訳に対応する英単語を選んでください</div>
+            <div id="japaneseWord" class="japanese-word"></div>
+            <div id="options" class="options"></div>
+            <button id="nextBtn" class="next-btn" onclick="nextQuestion()">次の問題</button>
+        </div>
+
+        <!-- 結果セクション -->
+        <div id="resultSection" class="result-section">
+            <h2>🎉 クイズ終了！</h2>
+            <div id="finalScore" class="final-score"></div>
+            <div id="finalMessage"></div>
+            <button class="restart-btn" onclick="restartQuiz()">もう一度挑戦</button>
+        </div>
+    </div>
+
+    <!-- 音声ファイル用 -->
+    <audio id="correctSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkad4v3AdCgGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBk=" type="audio/wav">
+    </audio>
+    <audio id="incorrectSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRu4CAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YcoCAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkad4v3AdCgGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBk=" type="audio/wav">
+    </audio>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        let vocabulary = [];
+        let currentQuestionIndex = 0;
+        let correctAnswers = 0;
+        let usedQuestions = new Set();
+        let currentCorrectAnswer = '';
+        const TOTAL_QUESTIONS = 100;
+
+        // 効果音の作成
+        function createSound(frequency, duration, type = 'sine') {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function playCorrectSound() {
+            createSound(800, 0.2);
+            setTimeout(() => createSound(1000, 0.2), 100);
+        }
+
+        function playIncorrectSound() {
+            createSound(300, 0.5, 'sawtooth');
+        }
+
+        function playSuccessSound() {
+            createSound(523, 0.2); // C
+            setTimeout(() => createSound(659, 0.2), 200); // E
+            setTimeout(() => createSound(784, 0.4), 400); // G
+        }
+
+        // ファイル読み込み処理
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showLoading(true);
+            clearError();
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    let data;
+                    const fileName = file.name.toLowerCase();
+                    
+                    if (fileName.endsWith('.csv')) {
+                        data = parseCSV(e.target.result);
+                    } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                        const workbook = XLSX.read(e.target.result, {type: 'binary'});
+                        const sheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[sheetName];
+                        data = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                    } else {
+                        throw new Error('サポートされていないファイル形式です。CSVまたはExcelファイルを選択してください。');
+                    }
+
+                    processVocabularyData(data);
+                    startQuiz();
+                } catch (error) {
+                    showError('ファイルの読み込みに失敗しました: ' + error.message);
+                } finally {
+                    showLoading(false);
+                }
+            };
+
+            if (file.name.toLowerCase().endsWith('.csv')) {
+                reader.readAsText(file, 'UTF-8');
+            } else {
+                reader.readAsBinaryString(file);
+            }
+        });
+
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const data = [];
+            for (let line of lines) {
+                if (line.trim()) {
+                    const row = line.split(',').map(cell => cell.trim().replace(/['"]/g, ''));
+                    data.push(row);
+                }
+            }
+            return data;
+        }
+
+        function processVocabularyData(data) {
+            vocabulary = [];
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
+                if (row.length >= 2 && row[0] && row[1]) {
+                    vocabulary.push({
+                        english: row[0].toString().trim(),
+                        japanese: row[1].toString().trim()
+                    });
+                }
+            }
+
+            if (vocabulary.length < 4) {
+                throw new Error('単語データが不足しています。最低4つの単語ペアが必要です。');
+            }
+        }
+
+        function startQuiz() {
+            document.getElementById('fileSection').style.display = 'none';
+            document.getElementById('quizSection').style.display = 'block';
+            currentQuestionIndex = 0;
+            correctAnswers = 0;
+            usedQuestions.clear();
+            updateStats();
+            generateQuestion();
+        }
+
+        function generateQuestion() {
+            if (currentQuestionIndex >= TOTAL_QUESTIONS || usedQuestions.size >= vocabulary.length) {
+                showResults();
+                return;
+            }
+
+            // 使用していない問題をランダム選択
+            let availableQuestions = vocabulary.filter((_, index) => !usedQuestions.has(index));
+            if (availableQuestions.length === 0) {
+                showResults();
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+            const selectedQuestion = availableQuestions[randomIndex];
+            const originalIndex = vocabulary.indexOf(selectedQuestion);
+            
+            usedQuestions.add(originalIndex);
+            currentCorrectAnswer = selectedQuestion.english;
+
+            // 和訳語を表示
+            document.getElementById('japaneseWord').textContent = selectedQuestion.japanese;
+
+            // 選択肢を生成
+            generateOptions(selectedQuestion);
+            
+            // 次へボタンを非表示
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+
+        function generateOptions(correctQuestion) {
+            const options = [correctQuestion.english];
+            
+            // 不正解の選択肢を3つ追加
+            const otherWords = vocabulary.filter(item => item.english !== correctQuestion.english);
+            const shuffledOthers = shuffleArray([...otherWords]);
+            
+            for (let i = 0; i < 3 && i < shuffledOthers.length; i++) {
+                options.push(shuffledOthers[i].english);
+            }
+
+            // 選択肢をシャッフル
+            const shuffledOptions = shuffleArray(options);
+
+            // 選択肢ボタンを生成
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.onclick = () => checkAnswer(option, button);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function checkAnswer(selectedAnswer, buttonElement) {
+            const buttons = document.querySelectorAll('.option-btn');
+            
+            // すべてのボタンを無効化
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (selectedAnswer === currentCorrectAnswer) {
+                buttonElement.classList.add('correct');
+                correctAnswers++;
+                playCorrectSound();
+            } else {
+                buttonElement.classList.add('incorrect');
+                // 正解のボタンを緑色にする
+                buttons.forEach(btn => {
+                    if (btn.textContent === currentCorrectAnswer) {
+                        btn.classList.add('correct');
+                    }
+                });
+                playIncorrectSound();
+            }
+
+            updateStats();
+            
+            // 次へボタンを表示
+            document.getElementById('nextBtn').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            generateQuestion();
+        }
+
+        function updateStats() {
+            const accuracy = currentQuestionIndex > 0 ? Math.round((correctAnswers / currentQuestionIndex) * 100) : 0;
+            const progress = (currentQuestionIndex / TOTAL_QUESTIONS) * 100;
+
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex;
+            document.getElementById('correctCount').textContent = correctAnswers;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function showResults() {
+            document.getElementById('quizSection').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'block';
+
+            const accuracy = Math.round((correctAnswers / currentQuestionIndex) * 100);
+            document.getElementById('finalScore').textContent = accuracy + '%';
+
+            let message = '';
+            if (accuracy >= 90) {
+                message = '🏆 素晴らしい！完璧な成績です！';
+                playSuccessSound();
+            } else if (accuracy >= 80) {
+                message = '🎉 とても良い成績です！';
+                playSuccessSound();
+            } else if (accuracy >= 70) {
+                message = '👍 良い成績です！';
+            } else if (accuracy >= 60) {
+                message = '📚 もう少し頑張りましょう！';
+            } else {
+                message = '💪 復習してもう一度挑戦してみてください！';
+            }
+
+            message += `<br><br>正解数: ${correctAnswers}/${currentQuestionIndex}`;
+            document.getElementById('finalMessage').innerHTML = message;
+        }
+
+        function restartQuiz() {
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('fileSection').style.display = 'block';
+            document.getElementById('fileInput').value = '';
+            vocabulary = [];
+            usedQuestions.clear();
+            updateStats();
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        function clearError() {
+            document.getElementById('errorMessage').textContent = '';
+        }
+    </script>
+</body>
+</html>
