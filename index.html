@@ -48,12 +48,18 @@
 
         .file-input {
             margin: 10px;
-            padding: 10px;
+            padding: 12px 20px;
             border: none;
             background: #667eea;
             color: white;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s ease;
+        }
+
+        .file-input:hover {
+            background: #5a6fd8;
         }
 
         .progress-bar {
@@ -222,14 +228,28 @@
     <div class="container">
         <h1 class="title">🎯 英単語クイズ</h1>
         
-        <!-- ファイル読み込みセクション -->
+        <!-- データ読み込みセクション -->
         <div id="fileSection" class="file-input-section">
-            <h3>スプレッドシートファイルを選択してください</h3>
+            <h3>データの読み込み方法を選択してください</h3>
             <p>A列：英単語、B列：和訳語</p>
-            <input type="file" id="fileInput" class="file-input" accept=".csv,.xlsx,.xls">
+            
+            <div style="margin: 20px 0;">
+                <button id="loadSpreadsheetBtn" class="file-input" onclick="loadFromSpreadsheet()">
+                    📊 Google スプレッドシートから読み込み
+                </button>
+                <p style="font-size: 0.9em; color: #666; margin-top: 5px;">
+                    事前に設定されたスプレッドシートから単語データを読み込みます
+                </p>
+            </div>
+            
+            <div style="margin: 20px 0; border-top: 1px solid #ddd; padding-top: 20px;">
+                <h4>または、ファイルをアップロード</h4>
+                <input type="file" id="fileInput" class="file-input" accept=".csv,.xlsx,.xls">
+            </div>
+            
             <div id="loading" class="loading">
                 <div class="spinner"></div>
-                <p>ファイルを読み込み中...</p>
+                <p id="loadingText">データを読み込み中...</p>
             </div>
             <div id="errorMessage" class="error-message"></div>
         </div>
@@ -287,6 +307,32 @@
         let usedQuestions = new Set();
         let currentCorrectAnswer = '';
         const TOTAL_QUESTIONS = 100;
+        
+        // Google スプレッドシートのURL
+        const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/13lpHIHCxRB-1R22zz4xGbFN7icDsZwr3rfu_XJYpQ6w/export?format=csv&gid=0';
+
+        // Google スプレッドシートからデータを読み込む
+        async function loadFromSpreadsheet() {
+            showLoading(true);
+            clearError();
+            document.getElementById('loadingText').textContent = 'Google スプレッドシートからデータを読み込み中...';
+
+            try {
+                const response = await fetch(SPREADSHEET_URL);
+                if (!response.ok) {
+                    throw new Error('スプレッドシートの読み込みに失敗しました');
+                }
+                
+                const csvText = await response.text();
+                const data = parseCSV(csvText);
+                processVocabularyData(data);
+                startQuiz();
+            } catch (error) {
+                showError('Google スプレッドシートの読み込みに失敗しました: ' + error.message + '\n※スプレッドシートが公開設定になっているか確認してください');
+            } finally {
+                showLoading(false);
+            }
+        }
 
         // 効果音の作成
         function createSound(frequency, duration, type = 'sine') {
@@ -522,8 +568,7 @@
             document.getElementById('quizSection').style.display = 'none';
             document.getElementById('resultSection').style.display = 'block';
 
-            const totalAnswered = currentQuestionIndex;
-            const accuracy = Math.round((correctAnswers / totalAnswered) * 100);
+            const accuracy = Math.round((correctAnswers / currentQuestionIndex) * 100);
             document.getElementById('finalScore').textContent = accuracy + '%';
 
             let message = '';
@@ -541,7 +586,7 @@
                 message = '💪 復習してもう一度挑戦してみてください！';
             }
 
-            message += `<br><br>正解数: ${correctAnswers}/${totalAnswered}`;
+            message += `<br><br>正解数: ${correctAnswers}/${currentQuestionIndex}`;
             document.getElementById('finalMessage').innerHTML = message;
         }
 
@@ -551,6 +596,8 @@
             document.getElementById('fileInput').value = '';
             vocabulary = [];
             usedQuestions.clear();
+            currentQuestionIndex = 0;
+            correctAnswers = 0;
             updateStats();
         }
 
