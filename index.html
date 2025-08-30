@@ -409,6 +409,9 @@
                 return;
             }
 
+            // 現在の問題番号を更新（1から始まる）
+            currentQuestionIndex++;
+
             // 使用していない問題をランダム選択
             let availableQuestions = vocabulary.filter((_, index) => !usedQuestions.has(index));
             if (availableQuestions.length === 0) {
@@ -431,6 +434,9 @@
             
             // 次へボタンを非表示
             document.getElementById('nextBtn').style.display = 'none';
+            
+            // 統計を更新
+            updateStats();
         }
 
         function generateOptions(correctQuestion) {
@@ -490,6 +496,7 @@
                 playIncorrectSound();
             }
 
+            // 統計を更新（回答後）
             updateStats();
             
             // 次へボタンを表示
@@ -497,17 +504,15 @@
         }
 
         function nextQuestion() {
-            currentQuestionIndex++;
             generateQuestion();
         }
 
         function updateStats() {
-            // 回答済みの問題数で正答率を計算
-            const answeredQuestions = currentQuestionIndex;
-            const accuracy = answeredQuestions > 0 ? Math.round((correctAnswers / answeredQuestions) * 100) : 0;
-            const progress = (answeredQuestions / TOTAL_QUESTIONS) * 100;
+            // currentQuestionIndexは現在の問題番号（1から始まる）
+            const accuracy = currentQuestionIndex > 0 ? Math.round((correctAnswers / currentQuestionIndex) * 100) : 0;
+            const progress = (currentQuestionIndex / TOTAL_QUESTIONS) * 100;
 
-            document.getElementById('currentQuestion').textContent = answeredQuestions;
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex;
             document.getElementById('correctCount').textContent = correctAnswers;
             document.getElementById('accuracy').textContent = accuracy + '%';
             document.getElementById('progressFill').style.width = progress + '%';
