@@ -502,10 +502,12 @@
         }
 
         function updateStats() {
-            const accuracy = currentQuestionIndex > 0 ? Math.round((correctAnswers / currentQuestionIndex) * 100) : 0;
-            const progress = (currentQuestionIndex / TOTAL_QUESTIONS) * 100;
+            // 回答済みの問題数で正答率を計算
+            const answeredQuestions = currentQuestionIndex;
+            const accuracy = answeredQuestions > 0 ? Math.round((correctAnswers / answeredQuestions) * 100) : 0;
+            const progress = (answeredQuestions / TOTAL_QUESTIONS) * 100;
 
-            document.getElementById('currentQuestion').textContent = currentQuestionIndex;
+            document.getElementById('currentQuestion').textContent = answeredQuestions;
             document.getElementById('correctCount').textContent = correctAnswers;
             document.getElementById('accuracy').textContent = accuracy + '%';
             document.getElementById('progressFill').style.width = progress + '%';
@@ -515,7 +517,8 @@
             document.getElementById('quizSection').style.display = 'none';
             document.getElementById('resultSection').style.display = 'block';
 
-            const accuracy = Math.round((correctAnswers / currentQuestionIndex) * 100);
+            const totalAnswered = currentQuestionIndex;
+            const accuracy = Math.round((correctAnswers / totalAnswered) * 100);
             document.getElementById('finalScore').textContent = accuracy + '%';
 
             let message = '';
@@ -533,7 +536,7 @@
                 message = '💪 復習してもう一度挑戦してみてください！';
             }
 
-            message += `<br><br>正解数: ${correctAnswers}/${currentQuestionIndex}`;
+            message += `<br><br>正解数: ${correctAnswers}/${totalAnswered}`;
             document.getElementById('finalMessage').innerHTML = message;
         }
 
