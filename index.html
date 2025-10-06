@@ -117,18 +117,10 @@
         }
 
         .options {
-            /* 修正点1: 4択から3択に変更 */
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr; /* 3列に変更 */
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin: 30px 0;
-        }
-        
-        /* 画面が狭い場合は1列にするためのメディアクエリ */
-        @media (max-width: 500px) {
-            .options {
-                grid-template-columns: 1fr;
-            }
         }
 
         .option-btn {
@@ -236,6 +228,7 @@
     <div class="container">
         <h1 class="title">🎯 英単語クイズ</h1>
         
+        <!-- データ読み込みセクション -->
         <div id="fileSection" class="file-input-section">
             <h3>データの読み込み方法を選択してください</h3>
             <p>A列：英単語、B列：和訳語</p>
@@ -261,6 +254,7 @@
             <div id="errorMessage" class="error-message"></div>
         </div>
 
+        <!-- 進捗表示 -->
         <div class="progress-bar">
             <div id="progressFill" class="progress-fill"></div>
         </div>
@@ -280,6 +274,7 @@
             </div>
         </div>
 
+        <!-- クイズセクション -->
         <div id="quizSection" class="question-section">
             <div class="question">次の和訳に対応する英単語を選んでください</div>
             <div id="japaneseWord" class="japanese-word"></div>
@@ -287,6 +282,7 @@
             <button id="nextBtn" class="next-btn" onclick="nextQuestion()">次の問題</button>
         </div>
 
+        <!-- 結果セクション -->
         <div id="resultSection" class="result-section">
             <h2>🎉 クイズ終了！</h2>
             <div id="finalScore" class="final-score"></div>
@@ -295,11 +291,12 @@
         </div>
     </div>
 
+    <!-- 音声ファイル用 -->
     <audio id="correctSound" preload="auto">
         <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkad4v3AdCgGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBk=" type="audio/wav">
     </audio>
     <audio id="incorrectSound" preload="auto">
-        <source src="data:audio/wav;base64,UklGRu4CAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YcoCAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkad4v3AdCgGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBk=" type="audio/wav">
+        <source src="data:audio/wav;base64,UklGRu4CAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YcoCAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkad4v3AdCgGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBkSa2/PDcycGKIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfBk=" type="audio/wav">
     </audio>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -437,9 +434,8 @@
                 }
             }
 
-            // 修正点2: 4択から3択への変更に伴い、最低必要な単語数を3つに変更
-            if (vocabulary.length < 3) { 
-                throw new Error('単語データが不足しています。最低3つの単語ペアが必要です。');
+            if (vocabulary.length < 4) {
+                throw new Error('単語データが不足しています。最低4つの単語ペアが必要です。');
             }
         }
 
@@ -492,12 +488,11 @@
         function generateOptions(correctQuestion) {
             const options = [correctQuestion.english];
             
-            // 修正点3: 不正解の選択肢を3つから2つに変更
+            // 不正解の選択肢を3つ追加
             const otherWords = vocabulary.filter(item => item.english !== correctQuestion.english);
             const shuffledOthers = shuffleArray([...otherWords]);
             
-            // 3択にするため、不正解の選択肢は2つ (i < 2)
-            for (let i = 0; i < 2 && i < shuffledOthers.length; i++) {
+            for (let i = 0; i < 3 && i < shuffledOthers.length; i++) {
                 options.push(shuffledOthers[i].english);
             }
 
